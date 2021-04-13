@@ -71,11 +71,103 @@ Figure 1 - G
 adultControl$time = NULL
 adultFBlock$time = NULL
 adultDBlock$time = NULL
-diffs = as_tibble(sapply(adultControl,diff))
+ipscControl$time = NULL
+ipscFBlock$time = NULL
+ipscDBlock$time = NULL
 
-maxs = sapply(diffs, max)
-mins = sapply(adultControl, min)
+# Depolarization Velocities
+maxAdultControl = round(sapply(adultControl, diff),digits = 2)
+maxAdultFBlock = round(sapply(adultFBlock, diff), digits = 2)
+maxAdultDBlock = round(sapply(adultDBlock, diff),digits = 2)
 
+maxipscControl = round(sapply(ipscControl, diff),digits = 2)
+maxipscFBlock = round(sapply(ipscFBlock, diff),digits = 2)
+maxipscDBlock = round(sapply(ipscDBlock, diff),digits = 2)
+
+
+# Max Diastolic Potential
+minAdultControl = round(sapply(adultControl, min),digits = 2)
+minAdultFBlock = round(sapply(adultFBlock, min),digits = 2)
+minAdultDBlock = round(sapply(adultDBlock, min),digits = 2)
+
+minipscControl = round(sapply(ipscControl, min),digits = 2)
+minipscFBlock = round(sapply(ipscFBlock, min),digits = 2)
+minipscDBlock = round(sapply(ipscDBlock, min),digits = 2)
+
+
+#Action potential duration
+adultControlAPD30 = APD30(adultControl)
+adultFBlockAPD30 = APD30(adultFBlock)
+adultDBlockAPD30 = APD30(adultFBlock)
+
+ipscControlAPD30 = APD30(ipscControl)
+ipscFBlockAPD30 = APD30(ipscFBlock)
+ipscDBlockAPD30 = APD30(ipscFBlock)
+
+
+adultControlAPD90 = APD90(adultControl)
+adultFBlockAPD90 = APD90(adultFBlock)
+adultDBlockAPD90 = APD90(adultFBlock)
+
+ipscControlAPD90 = APD90(ipscControl)
+ipscFBlockAPD90 = APD90(ipscFBlock)
+ipscDBlockAPD90 = APD90(ipscFBlock)
+
+col_names = c("Vmax (mV/ms)","MDP (mV)","ADP30 (ms)","ADP90 (ms)")
+
+iControl = c(paste0(min(maxipscControl),'-',max(maxipscControl)),paste0(min(minipscControl),'-',max(minipscControl)),paste0(min(ipscControlAPD30),'-',max(ipscControlAPD30)),paste0(min(ipscControlAPD90),'-',max(ipscControlAPD90)))
+iControlDelta = abs(c(max(maxipscControl)-min(maxipscControl),max(minipscControl)-min(minipscControl),max(ipscControlAPD30)-min(ipscControlAPD30),max(ipscControlAPD90)-min(ipscControlAPD90)))
+
+iFBlock = c(paste0(min(maxipscFBlock),'-',max(maxipscFBlock)),paste0(min(minipscFBlock),'-',max(minipscFBlock)),paste0(min(ipscFBlockAPD30),'-',max(ipscFBlockAPD30)),paste0(min(ipscFBlockAPD90),'-',max(ipscFBlockAPD90)))
+iFBlockDelta = abs(c(max(maxipscFBlock)-min(maxipscFBlock),max(minipscFBlock)-min(minipscFBlock),max(ipscFBlockAPD30)-min(ipscFBlockAPD30),max(ipscFBlockAPD90)-min(ipscFBlockAPD90)))
+
+iDBlock = c(paste0(min(maxipscDBlock),'-',max(maxipscDBlock)),paste0(min(minipscDBlock),'-',max(minipscDBlock)),paste0(min(ipscDBlockAPD30),'-',max(ipscDBlockAPD30)),paste0(min(ipscDBlockAPD90),'-',max(ipscDBlockAPD90)))
+iDBlockDelta = abs(c(max(maxipscDBlock)-min(maxipscDBlock),max(minipscDBlock)-min(minipscDBlock),max(ipscDBlockAPD30)-min(ipscDBlockAPD30),max(ipscDBlockAPD90)-min(ipscDBlockAPD90)))
+
+aControl = c(paste0(min(maxAdultControl),'-',max(maxAdultControl)),paste0(min(minAdultControl),'-',max(minAdultControl)),paste0(min(adultControlAPD30),'-',max(adultControlAPD30)),paste0(min(adultControlAPD90),'-',max(adultControlAPD90)))
+aControlDelta = abs(c(max(maxAdultControl)-min(maxAdultControl),max(minAdultControl)-min(minAdultControl),max(adultControlAPD30)-min(adultControlAPD30),max(adultControlAPD90)-min(adultControlAPD90)))
+
+aFBlock = c(paste0(min(maxAdultFBlock),'-',max(maxAdultFBlock)),paste0(min(minAdultFBlock),'-',max(minAdultFBlock)),paste0(min(adultFBlockAPD30),'-',max(adultFBlockAPD30)),paste0(min(adultFBlockAPD90),'-',max(adultFBlockAPD90)))
+aFBlockDelta = abs(c(max(maxAdultFBlock)-min(maxAdultFBlock),max(minAdultFBlock)-min(minAdultFBlock),max(adultFBlockAPD30)-min(adultFBlockAPD30),max(adultFBlockAPD90)-min(adultFBlockAPD90)))
+
+aDBlock = c(paste0(min(maxAdultDBlock),'-',max(maxAdultDBlock)),paste0(min(minAdultDBlock),'-',max(minAdultDBlock)),paste0(min(adultDBlockAPD30),'-',max(adultDBlockAPD30)),paste0(min(adultDBlockAPD90),'-',max(adultDBlockAPD90)))
+aDBlockDelta = abs(c(max(maxAdultDBlock)-min(maxAdultDBlock),max(minAdultDBlock)-min(minAdultDBlock),max(adultDBlockAPD30)-min(adultDBlockAPD30),max(adultDBlockAPD90)-min(adultDBlockAPD90)))
+
+
+G = rbind(iControl,round(iControlDelta,digits = 1),
+          aControl,round(aControlDelta,digits = 1),
+          iFBlock,round(iFBlockDelta,digits = 1),
+          aFBlock,round(aFBlockDelta,digits = 1),
+          iDBlock,round(iDBlockDelta,digits = 1),
+          aDBlock,round(aDBlockDelta,digits = 1))
+
+colnames(G) = col_names
+rownames(G) = c("IPSC-CM","Delta","adult-CM","Delta","IPSC-CM","Delta","adult-CM","Delta","IPSC-CM","Delta","adult-CM","Delta")
+G
+
+APD30 = function(df) {
+  A = numeric() 
+  for (i in 1:ncol(df)){
+    vect = df[,i]
+    vectnorm = vect+abs(min(vect))
+    max = max(vectnorm)
+    max30 = .7*max
+    A[i] = sum(vectnorm>max30)
+   }
+  return(A)
+}
+
+APD90 = function(df) {
+  A = numeric() 
+  for (i in 1:ncol(df)){
+    vect = df[,i]
+    vectnorm = vect+abs(min(vect))
+    max = max(vectnorm)
+    max90 = .1*max
+    A[i] = sum(vectnorm>max90)
+   }
+  return(A)
+}
 ```
 
 
