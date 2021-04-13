@@ -1,0 +1,74 @@
+---
+title: "Kalkunte-Data Replication"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(reshape2)
+library(ggpubr)
+```
+
+```{r}
+adultControl = read_csv("clean_data/adult_control_with_noise.csv", col_names=FALSE)
+adultFBlock = read_csv("clean_data/adult_block_with_noise.csv", col_names = FALSE)
+adultDBlock = read_csv("clean_data/adult_dof_with_noise.csv", col_names = FALSE)
+ipscControl = read_csv("clean_data/ipsc_control_with_noise.csv", col_names = FALSE)
+ipscFBlock = read_csv("clean_data/ipsc_block_with_noise.csv", col_names = FALSE)
+ipscDBlock = read_csv("clean_data/ipsc_dof_with_noise.csv", col_names = FALSE)
+
+# Calculating Control Average Traces for Figure 1
+ipscMeanControl = colMeans(ipscControl)
+adultMeanControl = colMeans(adultControl)
+meanControls = as_tibble(cbind(time, ipscMeanControl, adultMeanControl))
+
+## Plotting Simulated Adult CM APs with impedance
+adultControl = as_tibble(t(adultControl))
+adultFBlock = as_tibble(t(adultFBlock))
+adultDBlock = as_tibble(t(adultDBlock))
+adultControl$time = 0:700
+adultFBlock$time = 0:700
+adultDBlock$time = 0:700
+df =  melt(adultControl ,  id.vars = 'time', variable.name = 'series')
+df2 = melt(adultFBlock, id.vars = 'time', variable.name = 'series')
+df3 = melt(adultDBlock, id.vars = 'time', variable.name = 'series')
+adult = ggplot(df, aes(x=time,y = value)) + geom_line(aes(color = 'blue')) + geom_line(data = df2, aes(x = time, y=value,color = 'green')) + geom_line(data = df3, aes(x = time, y=value,color = 'purple')) + xlab("Time(ms)")+ ylab("Membrane Potential (mV)") + scale_colour_manual(name = '', values =c('blue'='blue','green'='green','purple'='purple'), labels = c('Control','1-50% Ikr Block', 'Dofetilide Ikr Block'))
+
+## Plotting Simulated ipsc CM APs with impedance
+ipscControl = as_tibble(t(ipscControl))
+ipscFBlock = as_tibble(t(ipscFBlock))
+ipscDBlock = as_tibble(t(ipscDBlock))
+ipscControl$time = 0:700
+ipscFBlock$time = 0:700
+ipscDBlock$time = 0:700
+df_i =  melt(ipscControl ,  id.vars = 'time', variable.name = 'series')
+df2_i = melt(ipscFBlock, id.vars = 'time', variable.name = 'series')
+df3_i = melt(ipscDBlock, id.vars = 'time', variable.name = 'series')
+ipsc = ggplot(df_i, aes(x=time,y = value)) + geom_line(aes(color = 'blue')) + geom_line(data = df2_i, aes(x = time, y=value,color = 'green')) + geom_line(data = df3_i, aes(x = time, y=value,color = 'purple')) ++ xlab("Time(ms)")+ ylab("Membrane Potential (mV)") + scale_colour_manual(name = '', values =c('blue'='blue','green'='green','purple'='purple'), labels = c('Control','1-50% Ikr Block', 'Dofetilide Ikr Block'))
+
+```
+## Figure 1
+```{r}
+A = ggplot(meanControls, aes(x = time, y = ipscMeanControl)) + geom_line() + ggtitle("Simulated Baseline iPSC-CM AP") + xlab("Time (ms)") + ylab("Membrane Potential (mV)")
+B = ggplot(meanControls, aes(x = time, y = adultMeanControl)) + geom_line(color = "red") + ggtitle("Simulated Baseline Adult-CM AP") + xlab("Time (ms)") + ylab("Membrane Potential (mV)")
+C = ggplot()
+D = ggplot()
+E = adult
+H = ipsc
+plot_grid(A, B, C, D, E, H,labels = "AUTO",ncol = 2)
+```
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+as_tibble(cbind(nms = names(df), t(df)))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
