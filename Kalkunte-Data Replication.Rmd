@@ -61,14 +61,22 @@ A = ggplot(meanControls, aes(x = time, y = ipscMeanControl)) + geom_line() + ggt
 B = ggplot(meanControls, aes(x = time, y = adultMeanControl)) + geom_line(color = "red") + ggtitle("Simulated Baseline Adult-CM AP") + xlab("Time (ms)") + ylab("Membrane Potential (mV)")
 C = ggplot()
 D = ggplot()
-E = adult
-H = ipsc
+E = ipsc
+H = adult
 plot_grid(A, B, C, D, E, H,labels = "AUTO",ncol = 2)
 ```
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-as_tibble(cbind(nms = names(df), t(df)))
+Figure 1 - G
+```{r}
+adultControl$time = NULL
+adultFBlock$time = NULL
+adultDBlock$time = NULL
+diffs = as_tibble(sapply(adultControl,diff))
+
+maxs = sapply(diffs, max)
+mins = sapply(adultControl, min)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
